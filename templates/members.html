@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+{% set active_page = 'members' %}
+{% block title %}Members - Library Management System{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    {% include "sidebar.html" %}
+
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                <div class="page-title">
+                    <h1>Members Management</h1>
+                    <p>Manage library members and memberships</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Actions Bar -->
+            <div class="page-actions">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" placeholder="Search members by name, email, or ID..."
+                           value="{{ search }}" data-search="members"
+                           onkeydown="if(event.key==='Enter'){const u=new URL(window.location.href);u.searchParams.set('search',this.value);window.location.href=u.toString();}">
+                </div>
+                <button class="btn btn-primary" onclick="openModal('addMemberModal')">
+                    ＋ Add Member
+                </button>
+            </div>
+
+            <!-- Members Grid -->
+            {% if members %}
+            <div class="members-grid">
+                {% for member in members %}
+                <div class="member-card">
+                    <div class="member-card-header">
+                        <div class="member-card-avatar" style="background: {{ member.avatar_color }}">
+                            {{ member.first_name[0] }}{{ member.last_name[0] }}
+                        </div>
+                        <div class="member-card-name">
+                            <h4>{{ member.first_name }} {{ member.last_name }}</h4>
+                            <div class="member-code">{{ member.member_id }}</div>
+                        </div>
+                        <div class="member-card-badges">
+                            <span class="badge badge-{{ member.status|lower }}">{{ member.status }}</span>
+                            <span class="badge badge-{{ member.membership_type|lower }}">{{ member.membership_type }}</span>
+                        </div>
+                    </div>
+
+                    <div class="member-card-details">
+                        <div class="member-detail">
+                            <span class="detail-icon">📧</span>
+                            {{ member.email }}
+                        </div>
+                        {% if member.phone %}
+                        <div class="member-detail">
+                            <span class="detail-icon">📱</span>
+                            {{ member.phone }}
+                        </div>
+                        {% endif %}
+                        {% if member.address %}
+                        <div class="member-detail">
+                            <span class="detail-icon">📍</span>
+                            {{ member.address }}
+                        </div>
+                        {% endif %}
+                        <div class="member-detail">
+                            <span class="detail-icon">📋</span>
+                            {{ member.active_borrows }} active borrowing{{ 's' if member.active_borrows != 1 }}
+                        </div>
+                    </div>
+
+                    <div class="member-card-actions">
+                        <button class="btn btn-ghost btn-sm" onclick="editMember({{ member.id }})">✏️ Edit</button>
+                        <button class="btn btn-ghost btn-sm" style="color: var(--accent-danger);"
+                                onclick="confirmDelete('members', {{ member.id }}, '{{ member.first_name }} {{ member.last_name }}')">🗑 Delete</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="card">
+                <div class="empty-state">
+                    <div class="empty-icon">👥</div>
+                    <h3>No members found</h3>
+                    <p>{% if search %}No members match "{{ search }}". Try a different search term.{% else %}Start by adding your first library member.{% endif %}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+
+<!-- Add Member Modal -->
+<div class="modal-overlay" id="addMemberModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>👤 Add New Member</h3>
+            <button class="modal-close" onclick="closeModal('addMemberModal')">×</button>
+        </div>
+        <form method="POST" action="{{ url_for('add_member') }}">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" name="first_name" class="form-input" placeholder="First name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" name="last_name" class="form-input" placeholder="Last name" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" class="form-input" placeholder="email@example.com" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" name="phone" class="form-input" placeholder="012-345-6789">
+                    </div>
+                    <div class="form-group">
+                        <label>Membership Type</label>
+                        <select name="membership_type" class="form-input">
+                            <option value="Standard">Standard</option>
+                            <option value="Premium">Premium</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea name="address" class="form-input" placeholder="Full address"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('addMemberModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Add Member</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Edit Member Modal -->
+<div class="modal-overlay" id="editMemberModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>✏️ Edit Member</h3>
+            <button class="modal-close" onclick="closeModal('editMemberModal')">×</button>
+        </div>
+        <form method="POST" id="editMemberForm">
+            <div class="modal-body">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name *</label>
+                        <input type="text" name="first_name" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name *</label>
+                        <input type="text" name="last_name" class="form-input" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email *</label>
+                    <input type="email" name="email" class="form-input" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Phone</label>
+                        <input type="text" name="phone" class="form-input">
+                    </div>
+                    <div class="form-group">
+                        <label>Membership Type</label>
+                        <select name="membership_type" class="form-input">
+                            <option value="Standard">Standard</option>
+                            <option value="Premium">Premium</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Status</label>
+                    <select name="status" class="form-input">
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Address</label>
+                    <textarea name="address" class="form-input"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeModal('editMemberModal')">Cancel</button>
+                <button type="submit" class="btn btn-primary">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

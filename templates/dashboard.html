@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% set active_page = 'dashboard' %}
+{% block title %}Dashboard - Library Management System{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    {% include "sidebar.html" %}
+
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                <div class="page-title">
+                    <h1>Dashboard</h1>
+                    <p>Welcome back, {{ session.full_name }}! Here's your library overview.</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Stats Grid -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon books">📖</div>
+                    </div>
+                    <div class="stat-value" data-count="{{ total_books }}">0</div>
+                    <div class="stat-label">Total Books</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon members">👥</div>
+                    </div>
+                    <div class="stat-value" data-count="{{ total_members }}">0</div>
+                    <div class="stat-label">Registered Members</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon borrows">📋</div>
+                    </div>
+                    <div class="stat-value" data-count="{{ active_borrows }}">0</div>
+                    <div class="stat-label">Active Borrowings</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-header">
+                        <div class="stat-icon overdue">⏰</div>
+                    </div>
+                    <div class="stat-value" data-count="{{ overdue_count }}">0</div>
+                    <div class="stat-label">Overdue Books</div>
+                </div>
+            </div>
+
+            <!-- Dashboard Grid -->
+            <div class="dashboard-grid">
+                <!-- Recent Borrowings -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3>🔄 Recent Borrowings</h3>
+                        <a href="{{ url_for('borrowings') }}" class="btn btn-ghost btn-sm">View All →</a>
+                    </div>
+                    <div class="table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Book</th>
+                                    <th>Member</th>
+                                    <th>Due Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for b in recent_borrowings %}
+                                <tr>
+                                    <td>
+                                        <div class="cell-info">
+                                            <div class="book-cover" style="background: {{ b.cover_color }}">📖</div>
+                                            <div class="info-text">
+                                                <div class="title">{{ b.book_title }}</div>
+                                                <div class="subtitle">{{ b.book_author }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="cell-info">
+                                            <div class="member-avatar" style="background: {{ b.avatar_color }}">
+                                                {{ b.first_name[0] }}{{ b.last_name[0] }}
+                                            </div>
+                                            <div class="info-text">
+                                                <div class="title">{{ b.first_name }} {{ b.last_name }}</div>
+                                                <div class="subtitle">{{ b.mem_id }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span style="font-size: 13px; color: var(--text-secondary);">
+                                            {{ b.due_date }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-{{ b.status|lower }}">
+                                            {% if b.status == 'Borrowed' %}📘{% elif b.status == 'Returned' %}✅{% else %}🔴{% endif %}
+                                            {{ b.status }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Right Column -->
+                <div style="display: flex; flex-direction: column; gap: 24px;">
+                    <!-- Categories -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>📂 Categories</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="category-list">
+                                {% for cat in categories %}
+                                <div class="category-item">
+                                    <div class="category-icon">{{ cat.icon }}</div>
+                                    <span class="category-name">{{ cat.name }}</span>
+                                    <span class="category-count">{{ cat.book_count }}</span>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Popular Books -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>🔥 Most Borrowed</h3>
+                        </div>
+                        <div class="card-body">
+                            {% for book in popular_books %}
+                            <div class="popular-item">
+                                <div class="popular-rank">{{ loop.index }}</div>
+                                <div class="popular-info">
+                                    <div class="title">{{ book.title }}</div>
+                                    <div class="author">{{ book.author }}</div>
+                                </div>
+                                <div class="popular-borrows">{{ book.borrow_count }} borrows</div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+{% endblock %}

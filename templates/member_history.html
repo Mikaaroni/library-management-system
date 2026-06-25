@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% set active_page = 'member_history' %}
+{% block title %}My Borrowing History - Library Management System{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    {% include "member_sidebar.html" %}
+
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                <div class="page-title">
+                    <h1>My Borrowing History</h1>
+                    <p>View all your past and current book borrowings.</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Filter Bar -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <select id="statusFilter" class="filter-select">
+                        <option value="">All Status</option>
+                        <option value="Borrowed" {{ 'selected' if status_filter=='Borrowed' }}>📘 Borrowed</option>
+                        <option value="Returned" {{ 'selected' if status_filter=='Returned' }}>✅ Returned</option>
+                        <option value="Overdue" {{ 'selected' if status_filter=='Overdue' }}>🔴 Overdue</option>
+                    </select>
+                </div>
+                <div class="toolbar-right">
+                    <span class="record-count">{{ borrowings|length }} record{{ 's' if borrowings|length != 1 }}</span>
+                </div>
+            </div>
+
+            {% if borrowings %}
+            <div class="card">
+                <div class="table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Book</th>
+                                <th>Category</th>
+                                <th>Borrow Date</th>
+                                <th>Due Date</th>
+                                <th>Return Date</th>
+                                <th>Status</th>
+                                <th>Fine</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for b in borrowings %}
+                            <tr>
+                                <td>
+                                    <div class="cell-info">
+                                        <div class="book-cover" style="background: {{ b.cover_color }}">📖</div>
+                                        <div class="info-text">
+                                            <div class="title">{{ b.book_title }}</div>
+                                            <div class="subtitle">{{ b.book_author }}</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span style="font-size: 13px; color: var(--text-secondary);">
+                                        {{ b.category_name or 'Uncategorized' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="font-size: 13px; color: var(--text-secondary);">
+                                        {{ b.borrow_date }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="font-size: 13px; color: var(--text-secondary);">
+                                        {{ b.due_date }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span style="font-size: 13px; color: var(--text-secondary);">
+                                        {{ b.return_date or '—' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-{{ b.status|lower }}">
+                                        {% if b.status == 'Borrowed' %}📘{% elif b.status == 'Returned' %}✅{% else
+                                        %}🔴{% endif %}
+                                        {{ b.status }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if b.fine_amount > 0 %}
+                                    <span style="color: var(--accent-danger); font-weight: 600; font-size: 13px;">
+                                        RM {{ "%.2f"|format(b.fine_amount) }}
+                                    </span>
+                                    {% else %}
+                                    <span style="font-size: 13px; color: var(--text-muted);">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if b.status in ['Borrowed', 'Overdue'] %}
+                                    <form method="POST" action="{{ url_for('member_return', borrowing_id=b.id) }}"
+                                        style="margin:0;">
+                                        <button type="submit" class="btn btn-success btn-sm">Return ↩</button>
+                                    </form>
+                                    {% else %}
+                                    <span style="font-size: 12px; color: var(--text-muted);">Completed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <div class="empty-icon">📋</div>
+                <h4>No borrowing history</h4>
+                <p>You haven't borrowed any books yet. Start browsing!</p>
+                <a href="{{ url_for('member_books') }}" class="btn btn-primary btn-sm">Browse Books →</a>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

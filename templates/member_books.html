@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% set active_page = 'member_books' %}
+{% block title %}Browse Books - Library Management System{% endblock %}
+
+{% block body %}
+<div class="app-layout">
+    {% include "member_sidebar.html" %}
+
+    <main class="main-content">
+        <!-- Top Bar -->
+        <header class="topbar">
+            <div class="topbar-left">
+                <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+                <div class="page-title">
+                    <h1>Browse Books</h1>
+                    <p>Search and borrow from our collection of {{ books|length }} books.</p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Page Content -->
+        <div class="page-content">
+            <!-- Search & Filter Bar -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <div class="search-box">
+                        <span class="search-icon">🔍</span>
+                        <input type="text" placeholder="Search by title, author, or ISBN..." value="{{ search }}"
+                            data-search="true">
+                    </div>
+                    <select id="categoryFilter" class="filter-select">
+                        <option value="">All Categories</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.name }}" {{ 'selected' if category_filter==cat.name }}>
+                            {{ cat.icon }} {{ cat.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Book Cards Grid -->
+            <div class="member-books-grid">
+                {% for book in books %}
+                <div class="member-book-card">
+                    <div class="member-book-cover" style="background: {{ book.cover_color }}">
+                        <span class="member-book-emoji">📖</span>
+                        {% if book.available_copies > 0 %}
+                        <span class="availability-tag available">Available</span>
+                        {% else %}
+                        <span class="availability-tag unavailable">Unavailable</span>
+                        {% endif %}
+                    </div>
+                    <div class="member-book-info">
+                        <h4 class="member-book-title">{{ book.title }}</h4>
+                        <p class="member-book-author">{{ book.author }}</p>
+                        <div class="member-book-meta">
+                            <span class="member-book-category">{{ book.category_name or 'Uncategorized' }}</span>
+                            <span class="member-book-copies">{{ book.available_copies }}/{{ book.total_copies }}
+                                copies</span>
+                        </div>
+                        {% if book.description %}
+                        <p class="member-book-desc">{{ book.description[:100] }}{% if book.description|length > 100
+                            %}...{% endif %}</p>
+                        {% endif %}
+                        <div class="member-book-actions">
+                            {% if book.available_copies > 0 %}
+                            <form method="POST" action="{{ url_for('member_borrow', book_id=book.id) }}"
+                                style="margin:0; width: 100%;">
+                                <button type="submit" class="btn btn-primary btn-sm btn-full">Borrow this Book
+                                    →</button>
+                            </form>
+                            {% else %}
+                            <button class="btn btn-secondary btn-sm btn-full" disabled>Not Available</button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            {% if not books %}
+            <div class="empty-state">
+                <div class="empty-icon">📚</div>
+                <h4>No books found</h4>
+                <p>Try adjusting your search or filter criteria.</p>
+            </div>
+            {% endif %}
+        </div>
+    </main>
+</div>
+{% endblock %}

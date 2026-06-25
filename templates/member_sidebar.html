@@ -1,0 +1,49 @@
+<!-- Member Sidebar component -->
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">📚</div>
+        <div class="sidebar-brand">
+            <h2>LibraryMS</h2>
+            <span>Member Portal</span>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-section-label">Main</div>
+            <a href="{{ url_for('member_dashboard') }}"
+                class="nav-link {{ 'active' if active_page == 'member_dashboard' }}">
+                <span class="nav-icon">📊</span>
+                Dashboard
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-label">Library</div>
+            <a href="{{ url_for('member_books') }}" class="nav-link {{ 'active' if active_page == 'member_books' }}">
+                <span class="nav-icon">📖</span>
+                Browse Books
+            </a>
+            <a href="{{ url_for('member_history') }}"
+                class="nav-link {{ 'active' if active_page == 'member_history' }}">
+                <span class="nav-icon">📋</span>
+                My History
+            </a>
+        </div>
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="{{ url_for('member_logout') }}" class="sidebar-user" title="Click to logout">
+            <div class="user-avatar" style="background: {{ session.member_avatar_color }};">
+                {{ session.member_name[0] if session.member_name else 'M' }}
+            </div>
+            <div class="user-info">
+                <div class="name">{{ session.member_name }}</div>
+                <div class="role">Member · Sign Out</div>
+            </div>
+        </a>
+    </div>
+</aside>
+
+<!-- Mobile sidebar overlay -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>

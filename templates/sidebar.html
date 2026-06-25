@@ -1,0 +1,52 @@
+<!-- Sidebar component included in all authenticated pages -->
+<aside class="sidebar">
+    <div class="sidebar-header">
+        <div class="sidebar-logo">📚</div>
+        <div class="sidebar-brand">
+            <h2>LibraryMS</h2>
+            <span>Management System</span>
+        </div>
+    </div>
+
+    <nav class="sidebar-nav">
+        <div class="nav-section">
+            <div class="nav-section-label">Main</div>
+            <a href="{{ url_for('dashboard') }}" class="nav-link {{ 'active' if active_page == 'dashboard' }}">
+                <span class="nav-icon">📊</span>
+                Dashboard
+            </a>
+        </div>
+
+        <div class="nav-section">
+            <div class="nav-section-label">Management</div>
+            <a href="{{ url_for('books') }}" class="nav-link {{ 'active' if active_page == 'books' }}">
+                <span class="nav-icon">📖</span>
+                Books
+            </a>
+            <a href="{{ url_for('members') }}" class="nav-link {{ 'active' if active_page == 'members' }}">
+                <span class="nav-icon">👥</span>
+                Members
+            </a>
+            <a href="{{ url_for('borrowings') }}" class="nav-link {{ 'active' if active_page == 'borrowings' }}">
+                <span class="nav-icon">🔄</span>
+                Borrowings
+                {% if overdue_nav is defined and overdue_nav > 0 %}
+                <span class="nav-badge">{{ overdue_nav }}</span>
+                {% endif %}
+            </a>
+        </div>
+    </nav>
+
+    <div class="sidebar-footer">
+        <a href="{{ url_for('logout') }}" class="sidebar-user" title="Click to logout">
+            <div class="user-avatar">{{ session.full_name[0] if session.full_name else 'A' }}</div>
+            <div class="user-info">
+                <div class="name">{{ session.full_name }}</div>
+                <div class="role">{{ session.role }} · Sign Out</div>
+            </div>
+        </a>
+    </div>
+</aside>
+
+<!-- Mobile sidebar overlay -->
+<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
